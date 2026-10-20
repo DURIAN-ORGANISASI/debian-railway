@@ -20,7 +20,13 @@ mkdir -p /data
 cd /data
 
 echo "Starting authenticated Debian web terminal on port ${PORT}."
+# ttyd 1.7.7 prints the credential field at NOTICE level by default.
+# Debug level 3 keeps ERROR/WARN logs and suppresses NOTICE to avoid logging
+# the base64-encoded Basic Auth credential. check-origin restricts WebSocket
+# access to the same origin as the terminal page.
 exec /usr/local/bin/ttyd \
+  --debug 3 \
+  --check-origin \
   --port "${PORT}" \
   --credential "${TERMINAL_USER}:${TERMINAL_PASSWORD}" \
   --writable \
