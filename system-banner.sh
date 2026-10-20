@@ -32,5 +32,6 @@ else
   printf '%s  |_|  |_|   %sMemory:%s   %s available / %s total\n' "$C_BLUE" "$C_CYAN" "$C_RESET" "${MEM_AVAIL:-unknown}" "${MEM_TOTAL:-unknown}"
   printf '%s             %sDisk:%s     %s\n' "$C_BLUE" "$C_CYAN" "$C_RESET" "${DISK_INFO:-unknown}"
   printf '%s             %sTimezone:%s %s\n' "$C_BLUE" "$C_CYAN" "$C_RESET" "$TZ_NAME"
+  printf '%s             %sDistro:%s   Debian Personal Railway\n' "$C_BLUE" "$C_CYAN" "$C_RESET"
 fi
 printf '%sStatus:%s   Debian terminal ready\n\n' "$C_GREEN" "$C_RESET"
