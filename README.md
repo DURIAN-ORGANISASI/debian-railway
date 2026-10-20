@@ -1,65 +1,49 @@
-# Debian Railway — Personal Web Terminal
+# Debian Personal Railway
 
-Container **Debian 13 (Trixie)** dengan terminal shell berbasis browser, autentikasi username/password, banner sistem otomatis, dan direktori kerja `/data`. Dirancang untuk deploy dari GitHub ke Railway.
+Container Debian 13 (Trixie) serbaguna dengan terminal web berbasis browser yang dilindungi username/password. Repository ini ditujukan untuk deploy langsung dari GitHub ke Railway. Saat login, banner sistem muncul otomatis.
 
-> **Penting:** ini adalah container aplikasi dengan terminal web, bukan VPS penuh. Railway tidak menyediakan `systemd` penuh, akses kernel host, atau perilaku VPS tradisional. Cocok untuk terminal CLI dan eksperimen; bukan jaminan semua daemon atau layanan latar belakang akan berjalan.
+> **Bukan VPS penuh.** Railway menjalankan container aplikasi, bukan server virtual dengan akses host, desktop GUI, atau jaminan systemd penuh.
 
 ## Fitur
 
-- Debian 13 (Trixie) slim
-- Terminal browser melalui `ttyd`
-- Login dilindungi `TERMINAL_USER` dan `TERMINAL_PASSWORD`
-- Banner sistem saat membuka shell login
-- Git, curl, Python 3, pip/venv, compiler, dan utilitas CLI
-- Direktori kerja `/data`
+- Image dasar Debian 13 (Trixie)
+- Terminal browser lewat `ttyd`, login username/password
+- Mendukung AMD64 dan ARM64
+- Bash login shell dengan banner sistem otomatis
+- Informasi OS, kernel, arsitektur, uptime, CPU, RAM, disk, shell, dan timezone
+- Tool CLI umum: Git, curl, Python 3, pip/venv, compiler/build tools, dan utilitas shell
+- Direktori kerja `/data`, dengan dukungan Railway Volume opsional
 - Zona waktu default `Asia/Jakarta`
-- Mendukung arsitektur AMD64 dan ARM64 selama image dan binary `ttyd` tersedia
-- Tidak menyimpan API key atau token provider dalam source code
-
-## Deploy ke Railway
-
-1. Buat repository GitHub baru bernama `debian-railway`, lalu unggah semua isi folder ini ke root repository.
-2. Di [Railway](https://railway.com/), pilih **New Project → Deploy from GitHub Repo**.
-3. Pilih repository `debian-railway`. Pastikan Railway membangun dari `Dockerfile` di root.
-4. Buka service → **Variables**, lalu tambahkan variabel berikut.
-5. Setelah build selesai, buka **Settings → Networking → Generate Domain**.
-6. Kunjungi domain Railway. Browser akan meminta username dan password.
+- Kredensial terminal tidak ditampilkan pada log NOTICE ttyd; pemeriksaan origin WebSocket aktif
 
 ## Variabel Railway
 
-Masukkan di **Railway → Service → Variables**:
+Buka **Railway → Service → Variables**, lalu atur variabel berikut:
 
-| Variable | Wajib | Nilai |
+| Variabel | Wajib | Nilai |
 |---|---:|---|
-| `TERMINAL_USER` | Ya | Username terminal, jangan memakai karakter `:` |
-| `TERMINAL_PASSWORD` | Ya | Password unik minimal 16 karakter; disarankan 24–40 karakter |
-| `TZ` | Tidak | `Asia/Jakarta` |
-| `PORT` | Otomatis | Biarkan Railway menyediakannya |
+| `TERMINAL_USER` | Ya | Username login; tidak boleh mengandung karakter titik dua (`:`) |
+| `TERMINAL_PASSWORD` | Ya | Password unik minimal 16 karakter; 24–40 karakter disarankan |
+| `TZ` | Tidak | Default `Asia/Jakarta` |
+| `PORT` | Otomatis | Biarkan Railway menyediakannya; jangan hardcode di Variables |
 
-Contoh nilai non-rahasia:
+Contoh nilai non-rahasia tersedia di `.env.example`. File itu hanya template lokal; **jangan pernah menaruh password asli di GitHub**. Jika password pernah bocor, ganti `TERMINAL_PASSWORD` di Railway Variables dan restart/redeploy service.
 
-```env
-TERMINAL_USER=durian
-TZ=Asia/Jakarta
-```
+## Deploy ke Railway
 
-Atur password langsung di Railway Variables. **Jangan** menaruh password asli ke README, GitHub, atau file `.env` yang di-commit. Jika password diduga bocor, ganti variabel dan redeploy/restart service.
+1. Buka project Railway atau buat project baru.
+2. Pilih **New Project → Deploy from GitHub Repo** lalu pilih repository `debian-railway`.
+3. Pastikan Railway membangun dengan `Dockerfile` di root repository.
+4. Tambahkan `TERMINAL_USER` dan `TERMINAL_PASSWORD` pada Variables.
+5. Deploy service dan periksa **Build Logs**. Dockerfile menjalankan `bash -n` pada skrip entrypoint dan banner agar kesalahan sintaks terdeteksi saat build.
+6. Buka **Settings → Networking → Generate Domain**.
+7. Kunjungi domain tersebut. Browser akan meminta username dan password.
 
-## Volume persisten
-
-Tanpa Volume, file di filesystem container bisa hilang saat container dibuat ulang atau redeploy.
-
-Untuk menyimpan file:
-1. Buka service di Railway.
-2. Masuk ke **Settings → Volumes → Add Volume**.
-3. Gunakan mount path `/data`.
-4. Simpan file penting di `/data`.
-
-Direktori awal terminal otomatis `/data`.
+Aplikasi mendengarkan port dari variabel Railway `PORT` (fallback `8080` untuk penggunaan lokal). Jangan menimpa variabel `PORT` otomatis di Railway.
 
 ## Menggunakan terminal
 
-Setelah domain Railway aktif, buka URL di browser dan login menggunakan `TERMINAL_USER` serta `TERMINAL_PASSWORD`. Shell berjalan sebagai root **di dalam container**, bukan sebagai root host Railway.
+Setelah domain aktif, buka URL dan login dengan `TERMINAL_USER` serta `TERMINAL_PASSWORD`. Shell berjalan sebagai root **di dalam container**, bukan sebagai root host Railway.
 
 Contoh perintah:
 
@@ -68,31 +52,48 @@ cat /etc/os-release
 python3 --version
 git --version
 pwd
+date
 ```
 
-Banner sistem muncul otomatis pada sesi Bash login baru.
+Bash dijalankan sebagai login shell, jadi banner sistem muncul otomatis ketika sesi terminal baru dibuka. Tidak perlu menjalankan `neofetch` atau `fastfetch` secara manual.
 
-## Batasan dan keamanan
+## Volume persisten
 
-- Terminal dapat diakses dari internet melalui domain Railway; gunakan password acak dan panjang.
-- Shell berjalan sebagai root di dalam container.
-- Jangan menaruh token/API key di command history atau file yang tersimpan pada repository.
-- Ini bukan VPS penuh: `systemd`, Docker-in-Docker, akses kernel host, dan semua daemon tradisional tidak dijamin tersedia.
-- Browser automation dan paket sistem tertentu mungkin membutuhkan dependensi tambahan.
-- Resource, waktu aktif, dan biaya mengikuti paket serta kebijakan Railway.
-- Periksa **Build Logs** dan **Deploy Logs** jika service gagal berjalan.
+Tanpa Volume, data pada filesystem container tidak dijamin bertahan setelah container dibuat ulang atau redeploy.
+
+Untuk menjaga file terminal:
+
+1. Buka **Railway → Service → Settings → Volumes → Add Volume**.
+2. Tetapkan **Mount Path** ke `/data`.
+3. Simpan file penting di `/data`.
+
+Direktori kerja awal terminal adalah `/data`. File yang disimpan di luar mount point ini tidak otomatis persisten.
+
+## Keamanan dan batasan
+
+- Gunakan password acak, panjang, unik, dan hanya untuk terminal ini.
+- ttyd dijalankan dengan `--debug 3` agar log NOTICE yang menyertakan field kredensial tidak ditampilkan; level ERROR/WARN tetap aktif.
+- Opsi `--check-origin` membatasi koneksi WebSocket browser ke origin yang sama.
+- Shell berjalan sebagai root di dalam container. Siapa pun yang memperoleh akses terminal memiliki hak istimewa tinggi di container.
+- Jangan menyimpan API key, token bot, password, atau file rahasia di repository.
+- Ini bukan VPS penuh: systemd, Docker-in-Docker, akses kernel host, dan semua daemon tradisional tidak dijamin tersedia.
+- Paket sistem tambahan atau browser automation mungkin memerlukan instalasi dan dependensi ekstra.
+- Build menggunakan base image distro dan binary ttyd yang diunduh saat build; build memerlukan akses jaringan dan ketersediaan sumber upstream.
+- Periksa Build Logs dan Deploy Logs Railway untuk memverifikasi build dan runtime. Source code saja tidak membuktikan deployment sudah berhasil.
 
 ## Troubleshooting
 
-**Build gagal saat mengunduh `ttyd`:** periksa koneksi build ke GitHub Releases dan pastikan arsitektur yang dipilih didukung.
+**Deployment berhenti langsung:** pastikan `TERMINAL_USER` terisi, tidak mengandung `:`, dan `TERMINAL_PASSWORD` memiliki minimal 16 karakter. Periksa Deploy Logs.
 
-**Deployment berhenti langsung:** pastikan `TERMINAL_USER` terisi dan `TERMINAL_PASSWORD` memiliki minimal 16 karakter.
+**Build gagal mengunduh ttyd atau paket:** periksa akses build ke GitHub Releases dan repositori paket distro. Pastikan arsitektur build adalah AMD64 atau ARM64.
 
-**Domain terbuka tetapi terminal tidak muncul:** pastikan deployment berstatus aktif, domain mengarah ke service yang benar, dan aplikasi mendengarkan pada `PORT` yang disediakan Railway.
+**Domain terbuka tetapi terminal tidak muncul:** pastikan deployment aktif, domain mengarah ke service yang tepat, dan aplikasi mendengarkan pada `PORT` Railway.
 
-**File hilang setelah redeploy:** pastikan Volume terpasang pada `/data` dan file disimpan di direktori itu.
+**Browser gagal membuka terminal/WebSocket:** coba buka domain HTTPS yang sama, jangan embed terminal dari origin lain, lalu periksa HTTP/runtime logs.
 
-**Banner tidak terlihat:** buka sesi baru dan pastikan shell Bash berjalan sebagai login shell.
+**Banner tidak terlihat:** buka sesi baru dan pastikan shell yang berjalan adalah Bash login interaktif.
+
+**File hilang setelah redeploy:** pastikan Volume terpasang tepat di `/data` dan simpan file di direktori tersebut.
 
 **Password perlu diganti:** ubah `TERMINAL_PASSWORD` di Railway Variables, lalu restart atau redeploy service.
 
@@ -106,5 +107,6 @@ debian-railway/
 ├── .dockerignore
 ├── .gitignore
 ├── .env.example
-└── LICENSE
+├── LICENSE
+└── README.md
 ```
