@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">Debian Personal Railway</title>
+  <desc id="desc">Original illustration of a Debian terminal in a dark interface with a red Debian swirl and deployment flow.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#131923"/><stop offset="1" stop-color="#222838"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f43f78"/><stop offset="1" stop-color="#a80030"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#05070d" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1200" height="440" rx="28" fill="url(#bg)"/>
+  <circle cx="1040" cy="62" r="155" fill="#a80030" opacity=".14"/>
+  <circle cx="1100" cy="388" r="220" fill="#e11d48" opacity=".07"/>
+  <path d="M0 350 C180 280 260 455 470 400 S790 310 1200 365 V440 H0Z" fill="#080b12" opacity=".27"/>
+  <g transform="translate(54 51)">
+    <rect x="0" y="0" width="680" height="338" rx="17" fill="#0b0e14" stroke="#4a5265" stroke-width="2" filter="url(#shadow)"/>
+    <path d="M17 0 H663 Q680 0 680 17 V54 H0 V17 Q0 0 17 0Z" fill="#2a3040"/>
+    <circle cx="28" cy="27" r="6" fill="#f87171"/><circle cx="50" cy="27" r="6" fill="#fbbf24"/><circle cx="72" cy="27" r="6" fill="#34d399"/>
+    <text x="340" y="32" fill="#bfc5d4" font-family="ui-monospace,Consolas,monospace" font-size="13" text-anchor="middle">debian-personal-railway · bash</text>
+    <text x="30" y="94" fill="#fb7185" font-family="ui-monospace,Consolas,monospace" font-size="15">root@railway-container</text>
+    <text x="30" y="123" fill="#e6e9f0" font-family="ui-monospace,Consolas,monospace" font-size="15">OS:       Debian GNU/Linux 13 (trixie)</text>
+    <text x="30" y="151" fill="#e6e9f0" font-family="ui-monospace,Consolas,monospace" font-size="15">Shell:    Bash login</text>
+    <text x="30" y="179" fill="#e6e9f0" font-family="ui-monospace,Consolas,monospace" font-size="15">Terminal: ttyd · authenticated</text>
+    <text x="30" y="207" fill="#e6e9f0" font-family="ui-monospace,Consolas,monospace" font-size="15">Workspace: /data</text>
+    <text x="30" y="255" fill="#86efac" font-family="ui-monospace,Consolas,monospace" font-size="15">$ git status --short</text>
+    <text x="30" y="283" fill="#a8b0c2" font-family="ui-monospace,Consolas,monospace" font-size="14"># ready for your next command</text>
+    <rect x="30" y="300" width="9" height="17" rx="2" fill="#fb7185"/>
+  </g>
+  <g transform="translate(805 91)">
+    <circle cx="140" cy="82" r="88" fill="#ffffff" opacity=".06"/>
+    <path d="M181 32 C149 2 103 15 78 45 C46 84 56 139 93 161 C122 178 161 171 180 149 C198 127 194 96 173 80 C151 63 119 72 110 93 C102 111 115 130 134 130 C146 130 154 122 156 111" fill="none" stroke="url(#accent)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M149 23 C174 30 194 46 205 69" fill="none" stroke="#fb7185" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+    <circle cx="174" cy="51" r="4" fill="#fb7185"/>
+    <text x="139" y="214" text-anchor="middle" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-weight="700" font-size="30">DEBIAN 13</text>
+    <text x="139" y="242" text-anchor="middle" fill="#c8ceda" font-family="Inter,Segoe UI,sans-serif" font-size="17">Trixie · Railway · Docker</text>
+    <path d="M39 280 H239" stroke="#596175" stroke-width="1.5"/>
+    <text x="139" y="311" text-anchor="middle" fill="#fb7185" font-family="Inter,Segoe UI,sans-serif" font-weight="600" font-size="16">WEB TERMINAL</text>
+  </g>
+</svg>
