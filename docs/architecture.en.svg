@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">Debian Personal Railway architecture</title>
+  <desc id="desc">HTTPS browser connects through Railway to ttyd, Bash in the Debian container, and an optional Volume at the data directory.</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#151a24"/><stop offset="1" stop-color="#262e3d"/></linearGradient><linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f43f78"/><stop offset="1" stop-color="#a80030"/></linearGradient><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#9aa4b8"/></marker></defs>
+  <rect width="1200" height="440" rx="24" fill="url(#bg)"/>
+  <text x="54" y="52" fill="#fff" font-family="Inter,Segoe UI,sans-serif" font-size="25" font-weight="700">Request → authenticated terminal → persistent workspace</text>
+  <text x="54" y="80" fill="#aeb7c8" font-family="Inter,Segoe UI,sans-serif" font-size="15">Conceptual deployment flow · application container, not a full VPS</text>
+  <g font-family="Inter,Segoe UI,sans-serif">
+    <rect x="52" y="137" width="230" height="126" rx="16" fill="#202838" stroke="#596579" stroke-width="1.5"/>
+    <circle cx="86" cy="171" r="13" fill="#e5e7eb"/><path d="M75 168 H97 M86 157 V181" stroke="#4b5563" stroke-width="2"/>
+    <text x="72" y="211" fill="#fff" font-size="19" font-weight="700">Browser</text><text x="72" y="237" fill="#b9c2d2" font-size="14">HTTPS · login prompt</text>
+    <path d="M284 199 H331" stroke="#9aa4b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="340" y="137" width="230" height="126" rx="16" fill="#202838" stroke="#a80030" stroke-width="2"/>
+    <rect x="363" y="155" width="38" height="29" rx="6" fill="url(#red)"/><path d="M374 169 l7 6 10 -13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="363" y="211" fill="#fff" font-size="19" font-weight="700">Railway Service</text><text x="363" y="237" fill="#b9c2d2" font-size="14">Domain · container port</text>
+    <path d="M572 199 H619" stroke="#9aa4b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="628" y="137" width="230" height="126" rx="16" fill="#202838" stroke="#596579" stroke-width="1.5"/>
+    <rect x="651" y="155" width="42" height="30" rx="5" fill="#0b0e14" stroke="#fb7185"/><path d="M660 165 l6 5 -6 5 M671 175 H683" fill="none" stroke="#fda4af" stroke-width="2" stroke-linecap="round"/>
+    <text x="651" y="211" fill="#fff" font-size="19" font-weight="700">ttyd + Bash</text><text x="651" y="237" fill="#b9c2d2" font-size="14">Debian 13 · root in container</text>
+    <path d="M860 199 H907" stroke="#9aa4b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="916" y="137" width="232" height="126" rx="16" fill="#202838" stroke="#596579" stroke-width="1.5"/>
+    <path d="M947 159 H985 V183 H947Z M947 166 H985 M955 177 H963" fill="none" stroke="#fb7185" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="940" y="211" fill="#fff" font-size="19" font-weight="700">Workspace</text><text x="940" y="237" fill="#b9c2d2" font-size="14">/data · CLI tools</text>
+    <path d="M1032 265 V310" stroke="#9aa4b8" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="886" y="319" width="262" height="75" rx="14" fill="#351827" stroke="#e11d48" stroke-width="1.5"/>
+    <path d="M913 339 H941 V365 H913Z M918 334 H946 V360" fill="none" stroke="#fb7185" stroke-width="2.3"/>
+    <text x="957" y="348" fill="#fff" font-size="17" font-weight="700">Railway Volume</text><text x="957" y="373" fill="#f5b8ca" font-size="14">Optional mount at /data</text>
+    <rect x="54" y="319" width="766" height="75" rx="14" fill="#171d29" stroke="#414b60"/>
+    <text x="78" y="348" fill="#fb7185" font-size="15" font-weight="700">SECURITY BOUNDARY</text><text x="78" y="373" fill="#c8ceda" font-size="14">Username/password + WebSocket origin check · no host-level access</text>
+  </g>
+</svg>
