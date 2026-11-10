@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM debian:trixie-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TTYD_VERSION=1.7.7
@@ -5,19 +6,27 @@ ARG TARGETARCH
 
 ENV TZ=Asia/Jakarta \
     PORT=8080 \
-    PATH="/root/.local/bin:/root/.local/share/uv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    HOME=/home/terminal \
+    USER=terminal \
+    LOGNAME=terminal \
+    PATH="/home/terminal/.local/bin:/home/terminal/.local/share/uv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# Keep the base images different but the installed terminal toolchain equivalent.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Keep apt indexes and downloaded archives in BuildKit cache mounts, not image layers.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     bash ca-certificates curl coreutils procps sed git \
     python3 python3-venv python3-pip \
     build-essential pkg-config libffi-dev libssl-dev xz-utils tzdata \
+    passwd util-linux \
     && (apt-get install -y --no-install-recommends fastfetch || true) \
     && ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime \
-    && printf '%s\n' "${TZ}" > /etc/timezone \
-    && rm -rf /var/lib/apt/lists/*
+    && printf '%s\\n' "${TZ}" > /etc/timezone \
+    && groupadd --gid 10001 terminal \
+    && useradd --uid 10001 --gid 10001 --create-home --home-dir /home/terminal --shell /bin/bash terminal \
+    && install -d --owner=terminal --group=terminal --mode=0770 /data
 
-# ttyd 1.7.7 is pinned; the entrypoint suppresses NOTICE logs that include its credential field.
+# ttyd 1.7.7 is pinned; entrypoint suppresses NOTICE logs that include its credential field.
 RUN set -eux; \
     case "${TARGETARCH:-amd64}" in \
       amd64) TTYD_ASSET="ttyd.x86_64" ;; \
@@ -32,9 +41,7 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY system-banner.sh /etc/profile.d/00-system-banner.sh
 
 RUN chmod 0755 /usr/local/bin/entrypoint.sh /etc/profile.d/00-system-banner.sh \
-    && bash -n /usr/local/bin/entrypoint.sh /etc/profile.d/00-system-banner.sh \
-    && mkdir -p /data \
-    && chmod 0777 /data
+    && bash -n /usr/local/bin/entrypoint.sh /etc/profile.d/00-system-banner.sh
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

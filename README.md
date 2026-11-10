@@ -39,7 +39,7 @@ Gunakan shell Bash, tool CLI harian, banner informasi sistem, dan penyimpanan fi
 <p align="center"><sub>Ilustrasi orisinal dokumentasi; bukan screenshot resmi Debian atau Railway.</sub></p>
 
 > [!WARNING]
-> **Bukan VPS penuh.** Railway menjalankan container aplikasi, bukan server virtual dengan akses ke host, desktop GUI, atau jaminan systemd penuh. Terminal web memberikan shell root di dalam container. Gunakan password kuat dan pahami bahwa siapa pun yang dapat login memiliki hak istimewa tinggi di container.
+> **Bukan VPS penuh.** Railway menjalankan container aplikasi, bukan server virtual dengan akses ke host, desktop GUI, atau jaminan systemd penuh. Entrypoint memakai hak akses tinggi hanya untuk menyiapkan `/data`, lalu menjalankan `ttyd` dan sesi terminal sebagai user non-root khusus (UID 10001). Gunakan password kuat dan batasi akses ke domain publik.
 
 ## Coba sekarang
 
@@ -54,6 +54,7 @@ Gunakan shell Bash, tool CLI harian, banner informasi sistem, dan penyimpanan fi
 
 - **Debian 13 (Trixie)** sebagai image dasar.
 - **Terminal browser** berbasis `ttyd` 1.7.7 dengan autentikasi username/password.
+- **Sesi terminal non-root** memakai user khusus UID 10001; direktori `/data` dan file volume lama disiapkan agar tetap dapat ditulis.
 - Mendukung arsitektur **AMD64 dan ARM64** melalui binary ttyd yang sesuai.
 - **Bash login shell** dengan banner informasi sistem otomatis.
 - Informasi sistem mencakup distro, kernel, arsitektur, uptime, CPU, RAM, disk, shell, dan timezone.
@@ -72,7 +73,7 @@ Alur terminal:
 1. Browser membuka domain HTTPS yang disediakan Railway.
 2. `ttyd` meminta username dan password sebelum membuka sesi terminal.
 3. Bash login shell memulai sesi dan menampilkan banner sistem.
-4. Perintah berjalan di container Debian dengan direktori kerja awal `/data`.
+4. Perintah berjalan di container Debian sebagai user non-root, dengan direktori kerja awal `/data`.
 5. Railway Volume opsional dipasang ke `/data` agar file tetap tersedia ketika container dibuat ulang.
 
 ## Cara pakai
@@ -121,7 +122,7 @@ date
 df -h /data
 ```
 
-Shell berjalan sebagai root **di dalam container**, bukan root host Railway. Tool Git, Python, pip/venv, curl, dan compiler sudah dipasang dalam image. `fastfetch` dipasang jika tersedia di repositori paket Debian; banner tetap memiliki tampilan cadangan jika tool tersebut tidak tersedia.
+Shell berjalan sebagai user non-root khusus **di dalam container** (UID 10001), bukan root pada host Railway. Tool Git, Python, pip/venv, curl, dan compiler sudah dipasang dalam image. Instalasi paket sistem yang memerlukan root membutuhkan image kustom. `fastfetch` dipasang jika tersedia di repositori paket Debian; banner tetap memiliki tampilan cadangan jika tool tersebut tidak tersedia.
 
 ## Volume persisten
 
@@ -131,7 +132,7 @@ Filesystem container tidak dijamin bertahan setelah container dibuat ulang atau 
 2. Tetapkan **Mount Path** tepat ke `/data`.
 3. Simpan file yang ingin dipertahankan di dalam `/data`.
 
-File di luar mount point tidak otomatis persisten. Volume juga bukan pengganti backup—salin file penting ke lokasi aman secara berkala.
+File di luar mount point tidak otomatis persisten. Pada startup pertama setelah pembaruan keamanan, kepemilikan file lama di `/data` disesuaikan ke user non-root; proses migrasi ini dapat memerlukan waktu untuk Volume yang berisi banyak file. Volume juga bukan pengganti backup—salin file penting ke lokasi aman secara berkala.
 
 ## Troubleshooting
 
@@ -148,7 +149,7 @@ File di luar mount point tidak otomatis persisten. Volume juga bukan pengganti b
 ## Privasi dan keamanan
 
 - **Lindungi domain publik.** Gunakan password unik yang kuat. Pertimbangkan lapisan akses tepercaya jika terminal memuat data sensitif.
-- **Hak root di container.** Perintah memiliki hak istimewa tinggi di container. Periksa perintah sebelum menjalankannya; ini bukan akses root ke host Railway.
+- **Sesi non-root.** Perintah terminal berjalan sebagai user UID 10001. Entrypoint hanya memakai hak root saat startup untuk menyiapkan kepemilikan `/data`, termasuk file volume lama; akses ini bukan root pada host Railway.
 - **Jaga kredensial.** Jangan simpan password, API key, token bot, atau konfigurasi rahasia di repository, screenshot, maupun log publik.
 - **Log ttyd.** ttyd dijalankan pada debug level 3 untuk menekan NOTICE yang dapat menyertakan field kredensial. ERROR/WARN tetap aktif; ini bukan jaminan keamanan menyeluruh.
 - **Origin WebSocket.** `--check-origin` membatasi koneksi WebSocket dari browser dengan origin yang tidak sesuai, tetapi tidak menggantikan autentikasi.
@@ -166,7 +167,7 @@ cd debian-railway
 docker build --tag debian-personal-railway .
 ```
 
-GitHub Actions membangun image dan menjalankan smoke test: container harus melayani halaman terminal dengan autentikasi, sementara log tidak boleh memuat password pengujian atau bentuk Base64-nya. Lolos CI tidak membuktikan bahwa deployment live di Railway sudah berhasil.
+GitHub Actions membangun dan menjalankan smoke test pada AMD64 serta ARM64, memverifikasi autentikasi, UID non-root, kemampuan menulis ke `/data`, dan memastikan log tidak memuat kredensial uji. Trivy juga memindai kerentanan HIGH/CRITICAL pada image (pelaporan, tidak memblokir build). Dependabot memeriksa pembaruan Docker base image dan GitHub Actions setiap minggu. Lolos CI tidak membuktikan bahwa deployment live di Railway sudah berhasil.
 
 ### Struktur repository
 
@@ -190,6 +191,7 @@ debian-railway/
 │   ├── architecture.en.svg
 │   └── SOURCES.md
 └── .github/
+    ├── dependabot.yml
     └── workflows/
         └── docker-build.yml
 ```

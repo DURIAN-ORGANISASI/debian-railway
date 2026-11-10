@@ -14,8 +14,9 @@ Include the affected component, impact, reproduction steps, and any relevant san
 
 - Set a unique, randomly generated `TERMINAL_PASSWORD` of at least 16 characters; longer is recommended.
 - Store terminal credentials only in Railway Variables or another trusted secret manager.
-- Anyone authenticated to the web terminal has root privileges inside the application container.
+- Authenticated terminal sessions run as the dedicated unprivileged UID 10001 account inside the application container. The startup entrypoint uses root only to migrate `/data` ownership and then drops privileges before starting ttyd.
 - Restrict access to the public domain when sensitive data or tools are available in the terminal.
-- A Railway Volume at `/data` provides persistence, not backup or access control.
+- On the first startup after the non-root security update, existing files under a Railway Volume mounted at `/data` are recursively assigned to UID/GID 10001; large Volumes may take longer to initialize. A Volume provides persistence, not backup or access control.
 - ttyd's WebSocket Origin check and log settings are defense-in-depth measures, not a replacement for strong authentication.
+- The terminal user cannot install system packages that require root. Customize and rebuild the image for system-level changes.
 - This application container is not a full VPS and does not provide host-level access.

@@ -34,3 +34,8 @@ They illustrate the documented architecture rather than guarantee a specific liv
 Project source files and original materials covered by the root `LICENSE` are released under the MIT License.
 
 The repository's MIT license does **not** override the terms of Debian's logo, ttyd, Debian packages, Docker, Railway, or other third-party components. Each upstream component remains subject to its respective terms. Refer to the root `LICENSE` and the upstream notices for exact conditions.
+
+## Project maintenance
+
+- [Trivy Action](https://github.com/aquasecurity/trivy-action): Docker image vulnerability reporting in GitHub Actions.
+- [Dependabot version updates](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates): weekly dependency update checks for Docker and GitHub Actions.

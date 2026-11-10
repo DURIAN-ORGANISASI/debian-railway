@@ -39,7 +39,7 @@ Use Bash, everyday CLI tools, an automatic system information banner, and option
 <p align="center"><sub>Original documentation illustration; not an official Debian or Railway screenshot.</sub></p>
 
 > [!WARNING]
-> **This is not a full VPS.** Railway runs an application container, not a virtual server with host access, a desktop GUI, or guaranteed full systemd support. The web terminal provides a root shell inside the container. Use a strong password and remember that anyone who can sign in has high privileges within that container.
+> **This is not a full VPS.** Railway runs an application container, not a virtual server with host access, a desktop GUI, or guaranteed full systemd support. The entrypoint uses elevated privileges only to prepare `/data`, then runs `ttyd` and terminal sessions as a dedicated non-root user (UID 10001). Use a strong password and restrict access to the public domain.
 
 ## Try it
 
@@ -54,6 +54,7 @@ Use Bash, everyday CLI tools, an automatic system information banner, and option
 
 - **Debian 13 (Trixie)** base image.
 - Browser terminal powered by **`ttyd` 1.7.7** with username/password authentication.
+- **Non-root terminal sessions** run as a dedicated UID 10001 account; `/data` and existing Volume files are prepared to remain writable.
 - Supports **AMD64 and ARM64** using the matching ttyd binary.
 - **Bash login shell** with an automatic system information banner.
 - System details include distribution, kernel, architecture, uptime, CPU, memory, disk, shell, and timezone.
@@ -72,7 +73,7 @@ Terminal flow:
 1. The browser opens the HTTPS domain provided by Railway.
 2. `ttyd` requests a username and password before opening the terminal session.
 3. Bash login shell starts and displays the system banner.
-4. Commands run inside the Debian container with `/data` as the initial working directory.
+4. Commands run inside the Debian container as an unprivileged user, with `/data` as the initial working directory.
 5. An optional Railway Volume mounted at `/data` keeps files available after container recreation.
 
 ## Deployment guide
@@ -121,11 +122,11 @@ date
 df -h /data
 ```
 
-The shell runs as root **inside the container**, not as root on the Railway host. Git, Python, pip/venv, curl, and compiler tools are installed in the image. `fastfetch` is installed when available in Debian's package repositories; the banner has a fallback display if the tool is unavailable.
+The shell runs as a dedicated unprivileged account **inside the container** (UID 10001), not as root on the Railway host. Git, Python, pip/venv, curl, and compiler tools are installed in the image. Installing system packages that require root needs a custom image. `fastfetch` is installed when available in Debian's package repositories; the banner has a fallback display if the tool is unavailable.
 
 ## Persistent storage
 
-The container filesystem is not guaranteed to survive container recreation or redeployment. To preserve working files:
+The container filesystem is not guaranteed to survive container recreation or redeployment. On the first startup after this security update, ownership of existing files in `/data` is migrated to the non-root account; this may take some time for Volumes containing many files. To preserve working files:
 
 1. Open **Railway → Service → Settings → Volumes → Add Volume**.
 2. Set the **Mount Path** to exactly `/data`.
@@ -148,7 +149,7 @@ Files outside the mount point are not automatically persistent. A Volume is not 
 ## Privacy and security
 
 - **Protect the public domain.** Use a strong, unique password. Consider a trusted access layer if the terminal handles sensitive data.
-- **Root privileges inside the container.** Commands have elevated privileges within the container. Review commands carefully; this is not root access to the Railway host.
+- **Unprivileged terminal session.** Terminal commands run as UID 10001. The entrypoint uses root privileges only during startup to prepare `/data` ownership, including existing Volume files; this does not grant root access to the Railway host.
 - **Protect credentials.** Never put passwords, API keys, bot tokens, or private configuration in the repository, screenshots, or public logs.
 - **ttyd logs.** ttyd runs at debug level 3 to suppress NOTICE messages that may include credential fields. ERROR/WARN messages remain enabled; this is not a complete security guarantee.
 - **WebSocket Origin.** `--check-origin` restricts WebSocket connections from mismatched browser origins but does not replace authentication.
@@ -166,7 +167,7 @@ cd debian-railway
 docker build --tag debian-personal-railway .
 ```
 
-GitHub Actions builds the image and runs a smoke test: the container must serve its authenticated terminal page, and logs must not contain the test password or its Base64 form. Passing CI does not prove that a live Railway deployment is successful.
+GitHub Actions builds and runs smoke tests on AMD64 and ARM64, checking authentication, the non-root UID, `/data` write access, and that logs do not contain test credentials. Trivy also scans the image for HIGH/CRITICAL vulnerabilities (report-only; it does not block the build). Dependabot checks Docker base-image and GitHub Actions updates weekly. Passing CI does not prove that a live Railway deployment is successful.
 
 ### Repository structure
 
@@ -190,6 +191,7 @@ debian-railway/
 │   ├── architecture.en.svg
 │   └── SOURCES.md
 └── .github/
+    ├── dependabot.yml
     └── workflows/
         └── docker-build.yml
 ```
